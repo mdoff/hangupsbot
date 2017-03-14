@@ -32,9 +32,10 @@ def handle_command(bot, event):
     aliases_list = bot.get_config_suboption(event.conv_id, 'commands_aliases')
     if not aliases_list:
         aliases_list = [default_bot_alias]
-
+    custom_commands = bot.get_config_suboption(event.conv_id, 'custom_commands')
+    all_list = aliases_list + custom_commands
     # Test if message starts with bot alias
-    if not find_bot_alias(aliases_list, event.text):
+    if not find_bot_alias(all_list, event.text):
         return
 
     # Test if command handling is enabled
@@ -62,7 +63,12 @@ def handle_command(bot, event):
             raise StopEventHandling
 
     # Run command
-    yield from command.run(bot, event, *line_args[1:])
+    if find_bot_alias(custom_commands, event.text):
+        new_args = line_args[:]
+        new_args[0] = new_args[0][1:]
+        yield from command.run(bot, event, *new_args)
+    else:
+        yield from command.run(bot, event, *line_args[1:])
 
     # Prevent other handlers from processing event
     raise StopEventHandling
