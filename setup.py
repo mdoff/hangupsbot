@@ -6,8 +6,8 @@ from setuptools import setup
 from hangupsbot.version import __version__
 
 install_requires = [
-    "hangups>=0.4.0",
-    "appdirs"
+    "hangups>=0.4.2",
+    "appdirs==1.4.0"
 ]
 
 if sys.version_info < (3, 4):
