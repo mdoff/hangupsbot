@@ -66,10 +66,10 @@ def lol(bot, event, *args):
     if apiKey is None:
         yield from event.conv.send_message(text_to_segments('API key is not defined'))
         return
-
     api.APIKEY = apiKey
-
     playerName = args[0]
+    print(apiKey)
+    print(playerName)
     #ugly if!
     if (playerName == 'list'):
         yield from list(bot, event, *args[1:], api)
@@ -79,7 +79,7 @@ def lol(bot, event, *args):
         yield from removeLol(bot, event, *args[1:])
     else:
         player = api.getPlayerByName(playerName)
-        msg = "Player nor found"
+        msg = "Player not found"
         if (playerName.lower() in player):
             player = player[playerName.lower()]
             msg = getPlayerInfo(api, player)
