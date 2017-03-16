@@ -57,21 +57,27 @@ def getPlayerInfo(api, player):
     msg = player['name'] + ' played as ' + champion['name'] + ' in ' + latestGame['gameMode'] + ' mode'
     msg += ' at ' + readableDate + ' and ' + status + ' ' + currentMsg
     return msg
- 
+
 
 @command.register
 def lol(bot, event, *args):
+    api =  RiotAPI()
+    apiKey = bot.config.get_by_path(['lol_api_key'])
+    if apiKey is None:
+        yield from event.conv.send_message(text_to_segments('API key is not defined'))
+        return
+
+    api.APIKEY = apiKey
+
     playerName = args[0]
     #ugly if!
     if (playerName == 'list'):
-        yield from list(bot, event, *args[1:])
+        yield from list(bot, event, *args[1:], api)
     elif(playerName == 'add'):
-        yield from addLol(bot, event, *args[1:])
+        yield from addLol(bot, event, *args[1:], api)
     elif(playerName == 'remove'):
         yield from removeLol(bot, event, *args[1:])
     else:
-        api =  RiotAPI()
-        api.APIKEY = ''
         player = api.getPlayerByName(playerName)
         msg = "Player nor found"
         if (playerName.lower() in player):
@@ -79,26 +85,25 @@ def lol(bot, event, *args):
             msg = getPlayerInfo(api, player)
         yield from event.conv.send_message(text_to_segments(msg))
 
-#@command.register
-def list(bot, event, *args):
+
+def list(bot, event, *args, api):
     players = bot.get_config_suboption(event.conv_id, "lol_players")
-    api =  RiotAPI()
-    api.APIKEY = ''
     res = ''
     for player in players:
         res += getPlayerInfo(api, player) +'\n'
     yield from event.conv.send_message(text_to_segments(res))
 
-def addLol(bot, event, *args):
+def addLol(bot, event, *args, api):
     playerName = args[0]
-    api =  RiotAPI()
-    api.APIKEY = ''
     player = api.getPlayerByName(playerName)
     msg = "Player not found"
     if (playerName.lower() in player):
         player = player[playerName.lower()]
         players = bot.get_config_suboption(event.conv_id, "lol_players")
+        if players is None:
+            players = []
         bot.config.set_by_path(["conversations", event.conv_id, "lol_players"], players + [player])
+        bot.config.save()
         msg = player['name'] + " on " + str(player['summonerLevel']) + " level was added"
 
     yield from event.conv.send_message(text_to_segments(msg))
