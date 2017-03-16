@@ -50,7 +50,10 @@ def getPlayerInfo(api, player):
     currentGame = api.getPlayerCurrentGame(player['id'])
     currentMsg = '\n' + player['name'] + ' is not playing now'
     if 'gameId' in currentGame:
-        currentMsg = '\n' + player['name'] + ' is plaing now since ' + formatTime(currentGame['gameStartTime'])
+        if (currentGame['gameStartTime'] < 100):
+            currentMsg = '\n' + player['name'] + ' is waiting to load game'
+        else:
+            currentMsg = '\n' + player['name'] + ' is plaing now since ' + formatTime(currentGame['gameStartTime'])
         currentMsg += ' ( ' + str(currentGame['gameLength']/60) +' minutes ) '
         currentMsg += 'in '+currentGame['gameMode']+' mode'
     readableDate = formatTime(latestGame['createDate'])
@@ -68,8 +71,6 @@ def lol(bot, event, *args):
         return
     api.APIKEY = apiKey
     playerName = args[0]
-    print(apiKey)
-    print(playerName)
     #ugly if!
     if (playerName == 'list'):
         yield from list(bot, event, *args[1:], api)
