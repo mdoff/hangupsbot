@@ -8,6 +8,7 @@
   "commands_admin": ["quit", "config"],
   "commands_enabled": true,
   "commands_aliases": ["/bot", "/hal", "/cylon", "/skynet", "/terminator"],
+  "command_aliases": ["/config"],
   "forwarding_enabled": true,
   "conversations": {
     "CONV1_ID": {

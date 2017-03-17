@@ -1,6 +1,7 @@
 from hangups.ui.utils import get_conv_name
 
 from hangupsbot.utils import text_to_segments
+from hangupsbot.handlers import StopEventHandling
 from hangupsbot.commands import command
 import requests
 import datetime
@@ -62,21 +63,32 @@ def getPlayerInfo(api, player):
     return msg
 
 
-@command.register
+@command.register(alias=True)
 def lol(bot, event, *args):
+    """Command to fetching data from RiotAPI,
+    usage:
+    /lol <username>
+    /lol list
+    /lol add <username>
+    /lol remove <username>
+    """
     api =  RiotAPI()
     apiKey = bot.config.get_by_path(['lol_api_key'])
     if apiKey is None:
         yield from event.conv.send_message(text_to_segments('API key is not defined'))
-        return
+        raise StopEventHandling
+    if len(args) == 0:
+        yield from event.conv.send_message(text_to_segments('username / command not specified'))
+        raise StopEventHandling
     api.APIKEY = apiKey
+
     playerName = args[0]
     #ugly if!
     if (playerName == 'list'):
         yield from list(bot, event, api, *args[1:])
-    elif(playerName == 'add'):
+    elif (playerName == 'add'):
         yield from addLol(bot, event, api, *args[1:])
-    elif(playerName == 'remove'):
+    elif (playerName == 'remove'):
         yield from removeLol(bot, event, *args[1:])
     else:
         player = api.getPlayerByName(playerName)
@@ -112,7 +124,7 @@ def addLol(bot, event, api, *args):
 def removeLol(bot, event, *args):
     if (len(args) != 1):
         yield from event.conv.send_message(text_to_segments("One player name required"))
-        return
+        raise StopEventHandling
     playerName = args[0]
     players = bot.get_config_suboption(event.conv_id, "lol_players")
     delta = len(players)

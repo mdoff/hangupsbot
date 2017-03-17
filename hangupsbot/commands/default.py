@@ -12,7 +12,7 @@ def unknown_command(bot, event, *args):
     )
 
 
-@command.register
+@command.register()
 def help(bot, event, cmd=None, *args):
     """Help me, Obi-Wan Kenobi. You're my only hope.
        Usage: /bot help [command]"""
@@ -30,12 +30,15 @@ def help(bot, event, cmd=None, *args):
     if cmd == 'help':
         text += _('\n\n'
                   '**Supported commands:**\n'
-                  '{}').format(', '.join(sorted(command.commands.keys())))
+                  '{}').format(", ".join(sorted(command.commands.keys())))
+        text += _('\n\n'
+                  '**Supported direct commands:**\n'
+                  '{}').format(', '.join(sorted(command.get_command_aliases(bot, event.conv_id))))
 
     yield from event.conv.send_message(text_to_segments(text))
 
 
-@command.register
+@command.register(alias=True)
 def ping(bot, event, *args):
     """Let's play ping pong!"""
     yield from event.conv.send_message(text_to_segments('pong'))

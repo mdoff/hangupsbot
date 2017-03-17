@@ -32,8 +32,9 @@ def handle_command(bot, event):
     aliases_list = bot.get_config_suboption(event.conv_id, 'commands_aliases')
     if not aliases_list:
         aliases_list = [default_bot_alias]
-    custom_commands = bot.get_config_suboption(event.conv_id, 'custom_commands')
-    all_list = aliases_list + custom_commands
+
+    command_aliases = command.get_command_aliases(bot, event.conv_id)
+    all_list = aliases_list + command_aliases
     # Test if message starts with bot alias
     if not find_bot_alias(all_list, event.text):
         return
@@ -45,16 +46,22 @@ def handle_command(bot, event):
     # Parse message
     line_args = shlex.split(event.text, posix=False)
 
+    f_name = ''
     # Test if command length is sufficient
-    if len(line_args) < 2:
+    if not find_bot_alias(command_aliases, event.text) and len(line_args) < 2:
         yield from event.conv.send_message(
-            text_to_segments(_('{}: How may I serve you?').format(event.user.full_name))
+            text_to_segments(_('{}: How may I serve you?'+', '.join([str(x) for x in command_aliases])).format(event.user.full_name))
         )
         raise StopEventHandling
+    elif find_bot_alias(command_aliases, event.text):
+        f_name = line_args[0][1:].lower()
+    else:
+        f_name = line_args[1].lower()
+
 
     # Test if user has permissions for running command
     commands_admin_list = command.get_admin_commands(bot, event.conv_id)
-    if commands_admin_list and line_args[1].lower() in commands_admin_list:
+    if commands_admin_list and (f_name in commands_admin_list):
         admins_list = bot.get_config_suboption(event.conv_id, 'admins')
         if event.user_id.chat_id not in admins_list:
             yield from event.conv.send_message(
@@ -63,7 +70,7 @@ def handle_command(bot, event):
             raise StopEventHandling
 
     # Run command
-    if find_bot_alias(custom_commands, event.text):
+    if find_bot_alias(command_aliases, event.text):
         new_args = line_args[:]
         new_args[0] = new_args[0][1:]
         yield from command.run(bot, event, *new_args)

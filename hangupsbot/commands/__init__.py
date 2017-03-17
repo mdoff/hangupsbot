@@ -5,6 +5,7 @@ class CommandDispatcher:
     """Register commands and run them"""
     def __init__(self):
         self.commands = {}
+        self.command_aliases = []
         self.commands_admin = []
         self.unknown_command = None
 
@@ -12,6 +13,11 @@ class CommandDispatcher:
         """Get list of admin-only commands (set by plugins or in config.json)"""
         commands_admin = bot.get_config_suboption(conv_id, 'commands_admin') or []
         return list(set(commands_admin + self.commands_admin))
+
+    def get_command_aliases(self, bot, conv_id):
+        """Get list of admin-only commands (set by plugins or in config.json)"""
+        command_aliases = bot.get_config_suboption(conv_id, 'command_aliases') or []
+        return list(set(command_aliases + self.command_aliases))
 
     @asyncio.coroutine
     def run(self, bot, event, *args, **kwds):
@@ -31,7 +37,7 @@ class CommandDispatcher:
         except Exception as e:
             print(e)
 
-    def register(self, *args, admin=False):
+    def register(self, *args, admin=False, alias=False):
         """Decorator for registering command"""
         def wrapper(func):
             # Automatically wrap command function in coroutine
@@ -39,6 +45,8 @@ class CommandDispatcher:
             self.commands[func.__name__] = func
             if admin:
                 self.commands_admin.append(func.__name__)
+            if alias:
+                self.command_aliases.append('/' + func.__name__)
             return func
 
         # If there is one (and only one) positional argument and this argument is callable,
