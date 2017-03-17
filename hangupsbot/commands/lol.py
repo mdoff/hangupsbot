@@ -116,6 +116,7 @@ def addLol(bot, event, api, *args):
         if players is None:
             players = []
         bot.config.set_by_path(["conversations", event.conv_id, "lol_players"], players + [player])
+        bot.config.changed = True
         bot.config.save()
         msg = player['name'] + " on " + str(player['summonerLevel']) + " level was added"
 
@@ -136,7 +137,11 @@ def removeLol(bot, event, *args):
     msg = "Player not found"
     if(delta == 1):
         msg = "Player " + playerName + " removed"
+        bot.config.changed = True
     elif(delta > 1):
         msg = delta + " players removed"
+        bot.config.changed = True
+        
+    bot.config.save()
 
     yield from event.conv.send_message(text_to_segments(msg))
