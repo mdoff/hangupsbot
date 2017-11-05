@@ -30,7 +30,7 @@ def lol(bot, event, *args):
     playerName = args[0]
     #ugly if!
     if (playerName == 'list'):
-        yield from list(bot, event, api, *args[1:])
+        yield from listLol(bot, event, api, *args[1:])
     elif (playerName == 'add'):
         yield from addLol(bot, event, api, *args[1:])
     elif (playerName == 'remove'):
@@ -44,7 +44,7 @@ def lol(bot, event, *args):
         yield from event.conv.send_message(text_to_segments(msg))
 
 
-def list(bot, event, api, *args):
+def listLol(bot, event, api, *args):
     players = bot.get_config_suboption(event.conv_id, "lol_players")
     res = ''
     for player in players:
@@ -55,8 +55,7 @@ def addLol(bot, event, api, *args):
     playerName = args[0]
     player = api.getPlayerByName(playerName)
     msg = "Player not found"
-    if (playerName.lower() in player):
-        player = player[playerName.lower()]
+    if (playerName.lower() == player['name'].lower()):
         players = bot.get_config_suboption(event.conv_id, "lol_players")
         if players is None:
             players = []
