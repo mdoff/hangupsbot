@@ -1,0 +1,9 @@
+version: '3'
+services:
+  hgbot:
+    build:
+      context: .
+    volumes:
+      - .:/opt/hangoutsbot/
+      - ./config:/etc/hangoutsbot/
+    command: sh -c "cd /opt/hangoutsbot/ && python3 /opt/hangoutsbot/setup.py build && python3 /opt/hangoutsbot/setup.py install && hangupsbot --config /etc/hangoutsbot/config.json --token /etc/hangoutsbot/refresh_token.txt --log /etc/hangoutsbot/hangupsbot.log"
